@@ -1,7 +1,7 @@
 
 # httplog
 
- HTTP logger for (apex/log)[https://github.com/apex/log].
+ HTTP logger for [apex/log](https://github.com/apex/log).
 
 ## Badges
 
