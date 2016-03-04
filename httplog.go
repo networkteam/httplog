@@ -43,8 +43,9 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res := &wrapper{w, 0, 200}
 
 	ctx := log.WithFields(log.Fields{
-		"method": r.Method,
-		"url":    r.RequestURI,
+		"url":        r.RequestURI,
+		"method":     r.Method,
+		"remoteAddr": r.RemoteAddr,
 	})
 
 	ctx.Info("request")
