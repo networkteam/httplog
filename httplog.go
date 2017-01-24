@@ -14,33 +14,56 @@ func New(h http.Handler) *Logger {
 
 // Logger middleware wrapping Handler.
 type Logger struct {
-	Handler http.Handler
+	http.Handler
 }
 
 // wrapper to capture status.
 type wrapper struct {
 	http.ResponseWriter
+	http.Flusher
+	http.CloseNotifier
+
 	written int
 	status  int
 }
 
-// capture status.
+// WriteHeader wrapper to capture status code.
 func (w *wrapper) WriteHeader(code int) {
 	w.status = code
 	w.ResponseWriter.WriteHeader(code)
 }
 
-// capture written bytes.
+// Write wrapper to capture response size.
 func (w *wrapper) Write(b []byte) (int, error) {
 	n, err := w.ResponseWriter.Write(b)
 	w.written += n
 	return n, err
 }
 
+// Flush implementation.
+func (w *wrapper) Flush() {
+	if w.Flusher != nil {
+		w.Flusher.Flush()
+	}
+}
+
 // ServeHTTP implementation.
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	res := &wrapper{w, 0, 200}
+
+	res := &wrapper{
+		ResponseWriter: w,
+		written:        0,
+		status:         200,
+	}
+
+	if f, ok := w.(http.Flusher); ok {
+		res.Flusher = f
+	}
+
+	if c, ok := w.(http.CloseNotifier); ok {
+		res.CloseNotifier = c
+	}
 
 	ctx := log.WithFields(log.Fields{
 		"url":        r.RequestURI,
