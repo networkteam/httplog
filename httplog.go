@@ -23,11 +23,13 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	res := makeLoggingResponseWriter(w)
 
-	ctx := log.WithFields(log.Fields{
-		"url":        r.RequestURI,
-		"method":     r.Method,
-		"remoteAddr": r.RemoteAddr,
-	})
+	ctx := log.
+		FromContext(r.Context()).
+		WithFields(log.Fields{
+			"url":        r.RequestURI,
+			"method":     r.Method,
+			"remoteAddr": r.RemoteAddr,
+		})
 
 	ctx.Info("request")
 	l.Handler.ServeHTTP(res, r)
